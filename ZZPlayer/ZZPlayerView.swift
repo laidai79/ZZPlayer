@@ -10,8 +10,8 @@ import AVFoundation
 
 protocol ZZPlayerViewDelegate:NSObjectProtocol {
     
-    func zzplayer(playerView:ZZPlayerView,sliderTouchUpOut slider:UISlider)
-    func zzplayer(playerView:ZZPlayerView,playAndPause playBtn:UIButton)
+    func zzplayer(_ playerView:ZZPlayerView,sliderTouchUpOut slider:UISlider)
+    func zzplayer(_ playerView:ZZPlayerView,playAndPause playBtn:UIButton)
 }
 
 class ZZPlayerView: UIView {
@@ -38,14 +38,14 @@ class ZZPlayerView: UIView {
         slider.maximumValue = 1
         slider.value = 0
         // 从最大值滑向最小值时杆的颜色
-        slider.maximumTrackTintColor = UIColor.clearColor()
+        slider.maximumTrackTintColor = UIColor.clear
         // 从最小值滑向最大值时杆的颜色
-        slider.minimumTrackTintColor = UIColor.whiteColor()
+        slider.minimumTrackTintColor = UIColor.white
         // 在滑块圆按钮添加图片
-        slider.setThumbImage(UIImage(named:"slider_thumb"), forState: UIControlState.Normal)
+        slider.setThumbImage(UIImage(named:"slider_thumb"), for: UIControlState())
         
         progressView = UIProgressView()
-        progressView.backgroundColor = UIColor.lightGrayColor()
+        progressView.backgroundColor = UIColor.lightGray
         self.insertSubview(progressView, belowSubview: slider)
         progressView.snp_makeConstraints { (make) in
             make.left.right.equalTo(slider)
@@ -53,12 +53,12 @@ class ZZPlayerView: UIView {
             make.height.equalTo(2)
         }
         
-        progressView.tintColor = UIColor.redColor()
+        progressView.tintColor = UIColor.red
         progressView.progress = 0
         
         timeLabel = UILabel()
-        timeLabel.textColor = UIColor.whiteColor()
-        timeLabel.font = UIFont.systemFontOfSize(12)
+        timeLabel.textColor = UIColor.white
+        timeLabel.font = UIFont.systemFont(ofSize: 12)
         self.addSubview(timeLabel)
         timeLabel.snp_makeConstraints { (make) in
             make.right.equalTo(self)
@@ -72,15 +72,15 @@ class ZZPlayerView: UIView {
             make.left.equalTo(self).offset(10)
             make.width.height.equalTo(30)
         }
-        playBtn.setImage(UIImage(named: "player_pause"), forState: UIControlState.Normal)
-        playBtn.addTarget(self, action: #selector(playAndPause( _:)) , forControlEvents: UIControlEvents.TouchUpInside)
+        playBtn.setImage(UIImage(named: "player_pause"), for: UIControlState())
+        playBtn.addTarget(self, action: #selector(playAndPause( _:)) , for: UIControlEvents.touchUpInside)
         
         // 按下的时候
-        slider.addTarget(self, action: #selector(sliderTouchDown( _:)), forControlEvents: UIControlEvents.TouchDown)
+        slider.addTarget(self, action: #selector(sliderTouchDown( _:)), for: UIControlEvents.touchDown)
         // 弹起的时候
-        slider.addTarget(self, action: #selector(sliderTouchUpOut( _:)), forControlEvents: UIControlEvents.TouchUpOutside)
-        slider.addTarget(self, action: #selector(sliderTouchUpOut( _:)), forControlEvents: UIControlEvents.TouchUpInside)
-        slider.addTarget(self, action: #selector(sliderTouchUpOut( _:)), forControlEvents: UIControlEvents.TouchCancel)
+        slider.addTarget(self, action: #selector(sliderTouchUpOut( _:)), for: UIControlEvents.touchUpOutside)
+        slider.addTarget(self, action: #selector(sliderTouchUpOut( _:)), for: UIControlEvents.touchUpInside)
+        slider.addTarget(self, action: #selector(sliderTouchUpOut( _:)), for: UIControlEvents.touchCancel)
     }
     
     override func layoutSubviews() {
@@ -89,20 +89,20 @@ class ZZPlayerView: UIView {
     }
     
     
-    func sliderTouchDown(slider:UISlider){
+    func sliderTouchDown(_ slider:UISlider){
         self.sliding = true
     }
-    func sliderTouchUpOut(slider:UISlider){
+    func sliderTouchUpOut(_ slider:UISlider){
         delegate?.zzplayer(self, sliderTouchUpOut: slider)
     }
     
-    func playAndPause(btn:UIButton){
+    func playAndPause(_ btn:UIButton){
         let tmp = !playing
         playing = tmp
         if playing {
-            playBtn.setImage(UIImage(named: "player_pause"), forState: UIControlState.Normal)
+            playBtn.setImage(UIImage(named: "player_pause"), for: UIControlState())
         }else{
-            playBtn.setImage(UIImage(named: "player_play"), forState: UIControlState.Normal)
+            playBtn.setImage(UIImage(named: "player_play"), for: UIControlState())
         }
         delegate?.zzplayer(self, playAndPause: btn)
     }
@@ -111,9 +111,9 @@ class ZZPlayerView: UIView {
 }
 
 //MARK: - 延时执行
-func delay(seconds: Double, completion:()->()) {
-    let popTime = dispatch_time(DISPATCH_TIME_NOW, Int64( Double(NSEC_PER_SEC) * seconds ))
-    dispatch_after(popTime, dispatch_get_main_queue()) {
+func delay(_ seconds: Double, completion:@escaping ()->()) {
+    let popTime = DispatchTime.now() + Double(Int64( Double(NSEC_PER_SEC) * seconds )) / Double(NSEC_PER_SEC)
+    DispatchQueue.main.asyncAfter(deadline: popTime) {
         completion()
     }
 }

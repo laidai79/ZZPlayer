@@ -24,30 +24,30 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // 检测连接是否存在 不存在报错
-        guard let url = NSURL(string: "http://bos.nj.bpc.baidu.com/tieba-smallvideo/11772_3c435014fb2dd9a5fd56a57cc369f6a0.mp4") else { fatalError("连接错误") }
+        guard let url = URL(string: "http://192.168.31.188/XXHHD.mp4") else { fatalError("连接错误") }
         
-        playerItem = AVPlayerItem(URL: url) // 创建视频资源
+        playerItem = AVPlayerItem(url: url) // 创建视频资源
         // 监听缓冲进度改变
-        playerItem.addObserver(self, forKeyPath: "loadedTimeRanges", options: NSKeyValueObservingOptions.New, context: nil)
+        playerItem.addObserver(self, forKeyPath: "loadedTimeRanges", options: NSKeyValueObservingOptions.new, context: nil)
         // 监听状态改变
-        playerItem.addObserver(self, forKeyPath: "status", options: NSKeyValueObservingOptions.New, context: nil)
+        playerItem.addObserver(self, forKeyPath: "status", options: NSKeyValueObservingOptions.new, context: nil)
         
         self.avplayer = AVPlayer(playerItem: playerItem)
         playerLayer = AVPlayerLayer(player: avplayer)
         
         //设置模式
         playerLayer.videoGravity = AVLayerVideoGravityResizeAspect
-        playerLayer.contentsScale = UIScreen.mainScreen().scale
+        playerLayer.contentsScale = UIScreen.main.scale
         self.playerView.playerLayer = self.playerLayer
-        self.playerView.layer.insertSublayer(playerLayer, atIndex: 0)
+        self.playerView.layer.insertSublayer(playerLayer, at: 0)
         self.playerView.delegate = self
         
         self.link = CADisplayLink(target: self, selector: #selector(update))
-        self.link.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
+        self.link.add(to: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
         
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
     }
     
@@ -57,7 +57,7 @@ class ViewController: UIViewController {
     }
     
     
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         guard let playerItem = object as? AVPlayerItem else { return }
         if keyPath == "loadedTimeRanges"{
 //            通过监听AVPlayerItem的"loadedTimeRanges"，可以实时知道当前视频的进度缓冲
@@ -69,7 +69,7 @@ class ViewController: UIViewController {
         }else if keyPath == "status"{
 //            AVPlayerItemStatusUnknown,AVPlayerItemStatusReadyToPlay, AVPlayerItemStatusFailed。只有当status为AVPlayerItemStatusReadyToPlay是调用 AVPlayer的play方法视频才能播放。
             print(playerItem.status.rawValue)
-            if playerItem.status == AVPlayerItemStatus.ReadyToPlay{
+            if playerItem.status == AVPlayerItemStatus.readyToPlay{
                 // 只有在这个状态下才能播放
                 self.avplayer.play()
             }else{
@@ -78,9 +78,9 @@ class ViewController: UIViewController {
         }
     }
     
-    func avalableDurationWithplayerItem()->NSTimeInterval{
-        guard let loadedTimeRanges = avplayer?.currentItem?.loadedTimeRanges,first = loadedTimeRanges.first else {fatalError()}
-        let timeRange = first.CMTimeRangeValue
+    func avalableDurationWithplayerItem()->TimeInterval{
+        guard let loadedTimeRanges = avplayer?.currentItem?.loadedTimeRanges,let first = loadedTimeRanges.first else {fatalError()}
+        let timeRange = first.timeRangeValue
         let startSeconds = CMTimeGetSeconds(timeRange.start)
         let durationSecound = CMTimeGetSeconds(timeRange.duration)
         let result = startSeconds + durationSecound
@@ -94,7 +94,7 @@ class ViewController: UIViewController {
         }
         
         let currentTime = CMTimeGetSeconds(self.avplayer.currentTime())
-        let totalTime   = NSTimeInterval(playerItem.duration.value) / NSTimeInterval(playerItem.duration.timescale)
+        let totalTime   = TimeInterval(playerItem.duration.value) / TimeInterval(playerItem.duration.timescale)
         
         
         let timeStr = "\(formatPlayTime(currentTime))/\(formatPlayTime(totalTime))"
@@ -107,12 +107,12 @@ class ViewController: UIViewController {
         
     }
     
-    func formatPlayTime(secounds:NSTimeInterval)->String{
+    func formatPlayTime(_ secounds:TimeInterval)->String{
         if secounds.isNaN{
             return "00:00"
         }
         let Min = Int(secounds / 60)
-        let Sec = Int(secounds % 60)
+        let Sec = Int(secounds.truncatingRemainder(dividingBy: 60))
         return String(format: "%02d:%02d", Min, Sec)
     }
     
@@ -125,24 +125,24 @@ class ViewController: UIViewController {
 
 extension ViewController:ZZPlayerViewDelegate{
     // 滑动滑块 指定播放位置
-    func zzplayer(playerView: ZZPlayerView, sliderTouchUpOut slider: UISlider) {
+    func zzplayer(_ playerView: ZZPlayerView, sliderTouchUpOut slider: UISlider) {
         
         //当视频状态为AVPlayerStatusReadyToPlay时才处理
-        if self.avplayer.status == AVPlayerStatus.ReadyToPlay{
+        if self.avplayer.status == AVPlayerStatus.readyToPlay{
             let duration = slider.value * Float(CMTimeGetSeconds(self.avplayer.currentItem!.duration))
             let seekTime = CMTimeMake(Int64(duration), 1)
-            self.avplayer.seekToTime(seekTime, completionHandler: { (b) in
+            self.avplayer.seek(to: seekTime, completionHandler: { (b) in
                 playerView.sliding = false
             })
         }
     }
     
     
-    func zzplayer(playerView: ZZPlayerView, playAndPause playBtn: UIButton) {
+    func zzplayer(_ playerView: ZZPlayerView, playAndPause playBtn: UIButton) {
         if !playerView.playing{
             self.avplayer.pause()
         }else{
-            if self.avplayer.status == AVPlayerStatus.ReadyToPlay{
+            if self.avplayer.status == AVPlayerStatus.readyToPlay{
                 self.avplayer.play()
             }
         }
